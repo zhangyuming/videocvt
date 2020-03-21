@@ -22,7 +22,7 @@ func main() {
 	flag.StringVar(&filePath,"fpath","/var/www/video/hls/","http file server path")
 	flag.IntVar(&filePort,"fport",81,"http port")
 	flag.StringVar(&loglevel,"level","info","loglevel")
-	flag.StringVar(&ffmpegPath,"ffmpegPath","/usr/bin/ffmpeg","ffmpeg path")
+	flag.StringVar(&ffmpegPath,"ffmpegPath","/usr/local/bin/ffmpeg","ffmpeg path")
 	flag.Parse()
 	video.FfmpegPath = ffmpegPath
 	l,_ := logrus.ParseLevel(loglevel)
