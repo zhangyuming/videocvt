@@ -146,7 +146,7 @@ func checkBackJob(key string)  {
 	go func(m map[string]int, key string) {
 		for range time.Tick(time.Second){
 			if v,ok :=m[key]; ok {
-				logrus.Debug("add key[",key," time +1 current value is ",v)
+				logrus.Trace("add key[",key," time +1 current value is ",v)
 				m[key] = m[key] + 1
 			}else{
 				return
@@ -158,7 +158,7 @@ func checkBackJob(key string)  {
 	go func(m map[string]int, key string) {
 		for range time.Tick(time.Second*5){
 			if v,ok :=m[key]; ok {
-				logrus.Debug("check key[",key,"] time is " ,v)
+				logrus.Trace("check key[",key,"] time is " ,v)
 				if v > reuestTimeout {
 					rt := video.Rtsp2Hls{}
 					rt.TeardownById(key,filePath)
