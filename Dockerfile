@@ -9,8 +9,8 @@ RUN apk add git && \
 
 FROM jrottenberg/ffmpeg:3.2-alpine
 COPY --from=builder /go/src/videocvt/videocvt /usr/bin/videocvt
-CMD ["11111111"]
-ENTRYPOINT ["sleep"]
+
+ENTRYPOINT ["/usr/bin/videocvt"]
 
 
 
