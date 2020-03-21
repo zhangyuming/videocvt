@@ -181,6 +181,11 @@ func (r *Rtsp2Hls)Reset(source string,dist string)(result string,err error){
 
 
 func addContext2S(c context){
+	for _,a := range s{
+		if a.ID == c.ID{
+			return
+		}
+	}
 	s = append(s, c)
 }
 func getContextByID(id string) (context,error){

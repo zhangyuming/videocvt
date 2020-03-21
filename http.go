@@ -52,7 +52,7 @@ func StartHttpServer(port int){
 		rthls := video.Rtsp2Hls{}
 
 		result,err := rthls.Convert(body,filePath)
-		
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"message":err.Error(),
