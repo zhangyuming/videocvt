@@ -58,7 +58,6 @@ func (r *Rtsp2Hls)Convert(source string,dist string)(result string,err error)  {
 		return "",v.Error
 	}
 
-	addContext2S(c)
 	start := time.Now()
 	for{
 		if b,_ := util.PathExists(dist + "/" + c.ID + "/" + HlsSuffix); b {
@@ -74,7 +73,7 @@ func (r *Rtsp2Hls)Convert(source string,dist string)(result string,err error)  {
 			return "",errors.New("pull stream timeout")
 		}
 	}
-
+	addContext2S(c)
 	return c.Result,nil
 }
 
@@ -155,7 +154,7 @@ func (r *Rtsp2Hls)Reset(source string,dist string)(result string,err error){
 		return "",v.Error
 	}
 
-	addContext2S(c)
+
 	start := time.Now()
 	for{
 		if b,_ := util.PathExists(dist + "/" + c.ID + "/" + HlsSuffix); b {
@@ -165,13 +164,14 @@ func (r *Rtsp2Hls)Reset(source string,dist string)(result string,err error){
 		}
 		d,_ := time.ParseDuration(strconv.Itoa(pullStreamTimeout)+"s")
 		if time.Now().After(start.Add(d)){
+
 			logrus.Info("timeout pull stream ",source)
 			cmd.Kill(c.PID)
 			os.RemoveAll(dist + "/" + c.ID + "/")
 			return "",errors.New("pull stream timeout")
 		}
 	}
-
+	addContext2S(c)
 	return c.Result,nil
 
 

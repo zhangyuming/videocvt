@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"videocvt/video"
 )
@@ -51,7 +52,7 @@ func StartHttpServer(port int){
 		rthls := video.Rtsp2Hls{}
 
 		result,err := rthls.Convert(body,filePath)
-		IdMap[result] = 1
+		setIdmap(result,1)
 		checkBackJob(result)
 
 		if err != nil {
@@ -127,7 +128,7 @@ func StartHttpServer(port int){
 			})
 		}else{
 			id := video.GetContextIdbySource(body)
-			delete(IdMap,id)
+			deleteIdmapKey(id)
 			c.JSON(http.StatusOK,gin.H{
 				"message": "success",
 			})
@@ -138,37 +139,65 @@ func StartHttpServer(port int){
 	router.Run(":"+strconv.Itoa(port))
 }
 
+var mtu = sync.RWMutex{}
+var idMap = make(map[string]int)
 
-var IdMap = make(map[string]int)
+func getIdmap(key string)(int,bool)  {
+	mtu.Lock()
+	if v,ok := idMap[key]; ok {
+		mtu.Unlock()
+		return v,ok
+	}else{
+		mtu.Unlock()
+		return -1,false
+	}
+}
+func setIdmap(key string, value int)  {
+	mtu.Lock()
+	idMap[key] = value
+	mtu.Unlock()
+}
+
+func addOne2Idmap(key string)  {
+	mtu.Lock()
+	idMap[key] = idMap[key] + 1
+	mtu.Unlock()
+}
+
+func deleteIdmapKey(key string)  {
+	mtu.Lock()
+	delete(idMap,key)
+	mtu.Unlock()
+}
 
 func checkBackJob(key string)  {
 	//每秒钟 把固定的请求加1
-	go func(m map[string]int, key string) {
+	go func(key string) {
 		for range time.Tick(time.Second){
-			if v,ok :=m[key]; ok {
+			if v,ok :=getIdmap(key); ok {
 				logrus.Trace("add key[",key," time +1 current value is ",v)
-				m[key] = m[key] + 1
+				addOne2Idmap(key)
 			}else{
 				return
 			}
 		}
 
-	}(IdMap,key)
+	}(key)
 	// 规定时间内如果固定请求的map值从超过指定时间 则干掉执行的后台任务
-	go func(m map[string]int, key string) {
+	go func(key string) {
 		for range time.Tick(time.Second*5){
-			if v,ok :=m[key]; ok {
+			if v,ok :=getIdmap(key); ok {
 				logrus.Trace("check key[",key,"] time is " ,v)
 				if v > reuestTimeout {
 					rt := video.Rtsp2Hls{}
 					rt.TeardownById(key,filePath)
-					delete(m,key)
+					deleteIdmapKey(key)
 				}
 			}else{
 				return
 			}
 		}
-	}(IdMap,key)
+	}(key)
 }
 
 func Filter()gin.HandlerFunc{
@@ -177,7 +206,7 @@ func Filter()gin.HandlerFunc{
 		///011ef62186fea63bff04d7c42f2122d9/index5.ts
 		key := strings.Split(url,"/")[1]
 		if len(key) == 32 {
-			IdMap[key] = 1
+			setIdmap(key,1)
 		}
 		c.Next()
 	}
