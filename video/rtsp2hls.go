@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/sirupsen/logrus"
 	"os"
+	"strconv"
 	"time"
 	"videocvt/cmd"
 	"videocvt/util"
@@ -11,6 +12,7 @@ import (
 )
 
 var FfmpegPath = ""
+var pullStreamTimeout = 30
 var s = []context{}
 
 type context struct {
@@ -57,14 +59,20 @@ func (r *Rtsp2Hls)Convert(source string,dist string)(result string,err error)  {
 	}
 
 	addContext2S(c)
-
+	start := time.Now()
 	for{
 		if b,_ := util.PathExists(dist + "/" + c.ID + "/" + HlsSuffix); b {
 			break
 		}else{
 			time.Sleep(time.Millisecond*100)
 		}
-
+		d,_ := time.ParseDuration(strconv.Itoa(pullStreamTimeout)+"s")
+		if time.Now().After(start.Add(d)){
+			logrus.Info("timeout pull stream ",source)
+			cmd.Kill(c.PID)
+			os.RemoveAll(dist + "/" + c.ID + "/")
+			return "",errors.New("pull stream timeout")
+		}
 	}
 
 	return c.Result,nil
@@ -148,21 +156,26 @@ func (r *Rtsp2Hls)Reset(source string,dist string)(result string,err error){
 	}
 
 	addContext2S(c)
+	start := time.Now()
 	for{
 		if b,_ := util.PathExists(dist + "/" + c.ID + "/" + HlsSuffix); b {
 			break
 		}else{
 			time.Sleep(time.Millisecond*100)
 		}
-
+		d,_ := time.ParseDuration(strconv.Itoa(pullStreamTimeout)+"s")
+		if time.Now().After(start.Add(d)){
+			logrus.Info("timeout pull stream ",source)
+			cmd.Kill(c.PID)
+			os.RemoveAll(dist + "/" + c.ID + "/")
+			return "",errors.New("pull stream timeout")
+		}
 	}
 
 	return c.Result,nil
 
 
 }
-
-
 
 
 
