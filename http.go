@@ -52,14 +52,14 @@ func StartHttpServer(port int){
 		rthls := video.Rtsp2Hls{}
 
 		result,err := rthls.Convert(body,filePath)
-		setIdmap(result,1)
-		checkBackJob(result)
-
+		
 		if err != nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"message":err.Error(),
 			})
 		}else{
+			setIdmap(result,1)
+			checkBackJob(result)
 			c.JSON(http.StatusOK,gin.H{
 				"message": protocol + "://" +host + ":" + strconv.Itoa(filePort) + "/" + result + "/" + video.HlsSuffix,
 			})
