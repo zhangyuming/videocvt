@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"github.com/sirupsen/logrus"
 	"videocvt/video"
 )
 
@@ -27,24 +27,13 @@ func main() {
 	//flag.StringVar(&filePath,"fpath","D:/tmp/","http file server path")
 	flag.Parse()
 	video.FfmpegPath = ffmpegPath
-	//l,_ := logrus.ParseLevel(loglevel)
-	//logrus.SetLevel(l)
-	//go StartFileServer(filePort,filePath)
-	//
-	//StartHttpServer(httpPort)
-	//cmd.Run("docker", "pull","nginx:latest")
-	//time.Sleep(time.Hour)
+	l,_ := logrus.ParseLevel(loglevel)
+	logrus.SetLevel(l)
+	go StartFileServer(filePort,filePath)
 
-	var sl = []int{3,5,34,21,43,43}
-	for index,s := range sl{
-		fmt.Println(index, s)
-		if s == 43{
-			fmt.Print(index)
-			sl = append(sl[:index], sl[index+1:]...)
-		}
+	StartHttpServer(httpPort)
 
-	}
-	fmt.Print(sl)
+
 
 
 }
