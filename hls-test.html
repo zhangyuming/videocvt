@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="UTF-8">
+    <title>前端播放m3u8格式视频</title>
+
+    <link rel="stylesheet" href="https://vjs.zencdn.net/7.6.6/video-js.css">
+    <script src="https://vjs.zencdn.net/7.6.6/video.js"></script>
+    <script src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.2.min.js"></script>
+   
+</head>
+<body>
+	<div>
+	<input type="text" id="rtsp"><button id="begin" type="button" class="btn btn-primary">Begin</button>
+	</div>
+    <video id="myVideo" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" width="1080" height="708" data-setup='{}'>    
+        
+    </video>
+</body>
+
+
+ 
+<script>    
+	
+	$("#begin").click(function(){
+	var surl = $("#rtsp").val()
+    $.post("http://39.106.23.94:31761/convertRtsp2Hls",
+	surl,
+    function(data,status){
+		
+        $("#source").attr("src",data.message)
+		
+		 // videojs 简单使用
+	    var myVideo = videojs('myVideo',{
+	        bigPlayButton : true, 
+	        textTrackDisplay : false, 
+	        posterImage: false,
+	        errorDisplay : false,
+	    })
+	
+	    myVideo.src(data.message)
+
+        myVideo.load(data.message)
+	
+	    myVideo.play() // 视频播放
+	    myVideo.pause() // 视频暂停
+		
+    });
+});
+	
+
+
+   
+</script>
+
+</html>
